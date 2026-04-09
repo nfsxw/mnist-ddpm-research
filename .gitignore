@@ -1,0 +1,25 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Training / inference artifacts
+results/
+final_output/
+final_report/
+
+# Generated datasets and logs
+data/mnist_png/
+data/MNIST/
+*.log
