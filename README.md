@@ -1,89 +1,87 @@
-# DDPM MNIST (CPU Demo)
+# mnist-ddpm-research
 
-This project trains a DDPM model on MNIST digits (`0-9`) using `denoising_diffusion_pytorch`.
-The setup is intentionally lightweight for CPU-only machines.
+DDPM pipeline for MNIST with isolated run artifacts and concise markdown reports for training and inference.
+
+## Key points
+
+- Training and generation are split into two scripts: `train.py` and `generate.py`.
+- Each training run is isolated in `results/run_<timestamp>/`.
+- Reports are generated automatically:
+  - `results/run_<timestamp>/train/training_report.md`
+  - `results/run_<timestamp>/inference/inference_report.md`
+- Generation includes visual artifacts: output grid collage, before/after collage, and denoising GIF.
+
+## Dataset policy
+
+- The repository does **not** store the MNIST dataset.
+- On first run, `train.py` downloads MNIST and prepares image folders under `data/`.
+- This is intentional and keeps the repository lightweight.
+- Dataset artifacts are ignored by git (`data/MNIST/`, `data/mnist_png/`).
 
 ## Project structure
 
 ```text
 ddpm_project/
-├── data/           # MNIST download + exported PNG dataset
-├── results/        # per-run folders: run_YYYYMMDD_HHMMSS with isolated artifacts
+├── data/                         # local dataset cache (not committed)
+├── results/                      # run-scoped artifacts
+│   └── run_YYYYMMDD_HHMMSS/
+│       ├── train/
+│       │   ├── model-final.pt
+│       │   ├── model_samples/
+│       │   ├── train_samples/
+│       │   ├── training_metrics.csv
+│       │   ├── training_loss_curve.png
+│       │   ├── training_samples_progress.gif
+│       │   └── training_report.md
+│       └── inference/
+│           ├── output/
+│           ├── generated_collage.png
+│           ├── noise_collage.png
+│           ├── before_after_collage.png
+│           ├── generation_process.gif
+│           └── inference_report.md
 ├── train.py
 ├── generate.py
 ├── requirements.txt
 └── README.md
 ```
 
-## 1) Create environment
+## Quick start
 
-### Windows (PowerShell)
+### 1) Create environment
+
+Windows (PowerShell):
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-### macOS / Linux
+macOS/Linux:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-## 2) Install dependencies
-
-Install from `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-```
-
-If you need to force CPU-only PyTorch wheels, use:
-
-```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install denoising-diffusion-pytorch tqdm
-```
-
-## 3) Train model
+### 2) Train
 
 ```bash
 python train.py
 ```
 
-Training details:
-- MNIST images are resized to `32x32`
-- Input normalization is handled as `[-1, 1]` by the trainer pipeline
-- U-Net config: `dim=64`, `dim_mults=(1, 2)`, `channels=1`
-- Diffusion timesteps: `1000`
-- AMP is disabled (`amp=False`) for CPU compatibility
-- Demo training steps: `2000`
-- Intermediate samples/checkpoints are saved every `500` steps in `results/` (`num_samples=16` for 4x4 grid)
-- Every run is isolated in `results/run_<timestamp>/train/`
-- Final model is saved as `model-final.pt`
-- Checkpoint models are moved to `model_samples/`
-- Training sample images are moved to `train_samples/`
-- Automatic training report: `training_report.md`
-- Loss graph: `training_loss_curve.png`
-
-## 4) Generate images from latest run
+### 3) Generate from latest run
 
 ```bash
 python generate.py
 ```
 
-This creates `19` images in:
-- `results/run_<latest>/inference/output/`
+## Notes
 
-Also creates:
-- `results/run_<latest>/inference/inference_report.md`
-- `results/run_<latest>/inference/generated_collage.png` (all generated images)
-- `results/run_<latest>/inference/before_after_collage.png` (noise collage vs generated collage)
-- `results/run_<latest>/inference/generation_process.gif` (denoising process)
-
-## Note on runtime
-
-CPU training is slower than GPU training. On a typical consumer CPU, this demo can take around **1-2 hours** (sometimes more depending on your hardware and background load).
+- Model: U-Net (`dim=64`, `dim_mults=(1,2)`, `channels=1`)
+- Diffusion timesteps: `1000`
+- Default training steps: `2000`
+- CPU-first configuration (`amp=False`)
